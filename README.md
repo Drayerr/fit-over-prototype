@@ -1,6 +1,8 @@
 # FitOver: Your AI Virtual Try-On (Prototype)
 FitOver is a Streamlit application that utilizes the Replicate API to demonstrate a Virtual Try-On feature. Users can upload their photo and a photo of a piece of clothing, and the AI model generates an image of the user wearing the uploaded apparel.
 
+![Example screenshot](https://github.com/Drayerr/fit-over-prototype/blob/c92d207bd26e4a11e016ac9ba5a15611c618f8e4/Picture%2001.png)
+
 ## 💡Features
 * Virtual Try-On: Seamlessly generate images of a person wearing new clothes using AI.
 
