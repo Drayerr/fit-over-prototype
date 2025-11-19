@@ -46,7 +46,7 @@ with content:
     else:
         st.warning("API Key not found. Please configure the .env file.", width=360)
 
-    col1, col_gap, col2 = st.columns([1, 0.2, 1])
+    col1, col_gap, col2, col_gap2, col3 = st.columns([1, 0.2, 1, 0.2, 1])
 
     with col1:
         st.header("1 - Your photo")
@@ -61,8 +61,8 @@ with content:
                 key="user_image_container",
                 css_styles="""
                     img {
-                        width: 250px !important; 
-                        height: 250px !important; 
+                        width: 300px !important; 
+                        height: 300px !important; 
                         object-fit: cover;
                     }
                 """,
@@ -84,8 +84,8 @@ with content:
                 key="clothing_image_container",
                 css_styles="""
                     img {
-                        width: 250px !important; 
-                        height: 250px !important; 
+                        width: 300px !important; 
+                        height: 300px !important; 
                         object-fit: cover;
                     }
                 """,
@@ -95,8 +95,6 @@ with content:
                 )
 
     is_ready = user_photo_file is not None and clothing_file is not None
-
-    st.markdown("---")
 
     with stylable_container(
         "Green",
@@ -112,57 +110,71 @@ with content:
             use_container_width=False,
         )
 
-    if run_button:
-        if user_photo_file and clothing_file:
-            with st.spinner(
-                "Processing... Uploading images and running AI model (may take 30-60 seconds)."
-            ):
-                try:
-                    input = {
-                        "model_image": user_photo_file,
-                        "top_image": clothing_file,
-                    }
+    with col3:
 
-                    output = replicate.run("omnious/vella-1.5", input=input)
+        if run_button:
+            if user_photo_file and clothing_file:
+                with st.spinner(
+                    "Processing... Uploading images and running AI model (may take 30-60 seconds)."
+                ):
+                    try:
+                        input = {
+                            "model_image": user_photo_file,
+                            "top_image": clothing_file,
+                        }
 
-                    if output and isinstance(output, list) and len(output) > 0:
+                        output = replicate.run("omnious/vella-1.5", input=input)
 
-                        result_url = getattr(output[0], "url", None)
+                        if output and isinstance(output, list) and len(output) > 0:
 
-                        if result_url:
-                            st.session_state["result_url"] = result_url
-                            st.success("Generation complete!")
-                            print("$$RESULT$$", result_url)
+                            result_url = getattr(output[0], "url", None)
+
+                            if result_url:
+                                st.session_state["result_url"] = result_url
+                                st.success("Generation complete!")
+                            else:
+                                st.error(
+                                    "Model returned an unexpected result or no URL."
+                                )
+                                st.session_state["result_url"] = None
                         else:
-                            st.error("Model returned an unexpected result or no URL.")
+                            st.error("Model returned an empty or invalid output.")
                             st.session_state["result_url"] = None
-                    else:
-                        st.error("Model returned an empty or invalid output.")
+
+                    except Exception as e:
+                        st.error(f"An error occurred during API call: {e}")
                         st.session_state["result_url"] = None
 
-                except Exception as e:
-                    st.error(f"An error occurred during API call: {e}")
-                    st.session_state["result_url"] = None
-
-    st.markdown("---")
-
-    if "result_url" in st.session_state and st.session_state["result_url"]:
         st.subheader("Final Result: ")
-        st.image(
-            st.session_state["result_url"],
-            caption="Try-On Result",
-            use_container_width=True,
-        )
 
-        st.link_button(
-            "Download Result",
-            st.session_state["result_url"],
-            type="primary",
-            use_container_width=True,
-        )
-    else:
-        st.info("Upload your photos and click 'Run Script' to generate the result.")
+        if "result_url" in st.session_state and st.session_state["result_url"]:
+            st.info("Generated with omnious/vella-1.5")
+            with stylable_container(
+                key="result_image_container",
+                css_styles="""
+                            img {
+                                width: 400px !important;
+                                height: 450px !important;
+                                object-fit: cover;
+                            }
+                        """,
+            ):
+                st.image(
+                    st.session_state["result_url"],
+                    caption="Try-On Result",
+                    use_container_width=True,
+                )
+
+            st.link_button(
+                "Download Result",
+                st.session_state["result_url"],
+                type="primary",
+                use_container_width=True,
+            )
+        else:
+            st.info("Upload your photos and click 'Run Script' to generate the result.")
 
     st.markdown("---")
+
 
 add_footer()
